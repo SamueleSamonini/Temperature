@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import csv_cleaner
 import sys
@@ -26,3 +27,12 @@ temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
 data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
 data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
 temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+
+world = gpd.read_file("map/ne_110m_admin_0_countries.shp")
+plt.figure(figsize = (15, 10))
+world.plot(color = 'red', edgecolor = 'black')
+plt.title('World')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.show()
+
