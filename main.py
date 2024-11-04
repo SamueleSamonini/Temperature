@@ -29,10 +29,11 @@ data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].r
 temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
 world = gpd.read_file("map/ne_110m_admin_0_countries.shp")
-plt.figure(figsize = (15, 10))
-world.plot(color = 'red', edgecolor = 'black')
-plt.title('World')
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.show()
+fig, ax = plt.subplots(figsize=(12, 6))
+world.plot(ax=ax, color='red', edgecolor='black')
 
+ax.set_title('World')
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+plt.show()
