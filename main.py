@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import csv_cleaner
+import csv_cleaner 
 import sys
 import csv
 
@@ -29,11 +29,20 @@ data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].r
 temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
 world = gpd.read_file("map/ne_110m_admin_0_countries.shp")
-fig, ax = plt.subplots(figsize=(12, 6))
-world.plot(ax=ax, color='red', edgecolor='black')
+# fig, ax = plt.subplots(figsize=(12, 6))
+# world.plot(ax=ax, color='red', edgecolor='black')
 
-ax.set_title('World')
-ax.set_xlabel('Longitude')
-ax.set_ylabel('Latitude')
+# ax.set_title('World')
+# ax.set_xlabel('Longitude')
+# ax.set_ylabel('Latitude')
 
-plt.show()
+# plt.show()
+
+print(world.head())
+
+data_state_temperature = pd.read_csv('data/GlobalLandTemperaturesByState.csv')
+
+state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
+
+print(state_branches)
+
