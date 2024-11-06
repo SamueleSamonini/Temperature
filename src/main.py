@@ -29,20 +29,31 @@ data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].r
 temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
 world = gpd.read_file("map/ne_110m_admin_0_countries.shp")
-print(world.columns)
-north_america = world[world['ISO_A3'].isin(["USA", "CAN", "MEX"])]
+world = world.explode(index_parts=False)
+europe = world[(world['CONTINENT'] == 'Europe') & (world['SOVEREIGNT'] != 'Russia')]
+europe = europe[(europe.geometry.centroid.y > 35) & (europe.geometry.centroid.y < 72) &
+                (europe.geometry.centroid.x > -30) & (europe.geometry.centroid.x < 50)]
 
-fig, ax = plt.subplots(figsize=(12, 6))
-north_america.plot(ax=ax, edgecolor='black')
-ax.set_title('North America')
+fig, ax = plt.subplots(figsize=(10, 7))
+europe.plot(ax=ax, edgecolor='black')
+ax.set_title('Europe')
 ax.set_xlabel('Longitude')
 ax.set_ylabel('Latitude')
+ax.set_aspect('auto') 
 
 plt.show()
 
-data_state_temperature = pd.read_csv('data/north_america_city.csv')
+# data_state_temperature = pd.read_csv('data/north_america_city.csv')
 
-state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
+# state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
+# north_america = north_america.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
 
-print(state_branches)
+# print(state_branches)
 
+# fig, ax = plt.subplots(figsize=(12, 6))
+# north_america.plot(column='AverageTemperature', cmap='coolwarm', legend=True, edgecolor='black', ax=ax)
+# ax.set_title('North America - Average Temperature by Country')
+# ax.set_xlabel('Longitude')
+# ax.set_ylabel('Latitude')
+
+# plt.show()
