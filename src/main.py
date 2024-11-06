@@ -43,17 +43,17 @@ ax.set_aspect('auto')
 
 plt.show()
 
-# data_state_temperature = pd.read_csv('data/north_america_city.csv')
+data_state_temperature = pd.read_csv('data/europe_city.csv')
 
-# state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
-# north_america = north_america.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
+state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
+europe = europe.merge(state_branches, left_on = "SOVEREIGNT", right_on = "Country", how = "left")
 
-# print(state_branches)
+print(state_branches)
 
-# fig, ax = plt.subplots(figsize=(12, 6))
-# north_america.plot(column='AverageTemperature', cmap='coolwarm', legend=True, edgecolor='black', ax=ax)
-# ax.set_title('North America - Average Temperature by Country')
-# ax.set_xlabel('Longitude')
-# ax.set_ylabel('Latitude')
+fig, ax = plt.subplots(figsize=(11, 7))
+europe.plot(column='AverageTemperature', cmap='coolwarm', legend=True, edgecolor='black', ax=ax)
+ax.set_title('Europe - Average Temperature by Country from 1740 to 2015')
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
 
-# plt.show()
+plt.show()
