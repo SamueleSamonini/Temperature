@@ -26,7 +26,7 @@ world = gpd.read_file("map/ne_10m_admin_0_countries.shp")
 world = world.explode(index_parts=False)
 
 # We filter the file for print only the europe, and we delete russia and other far land for a better visualization of the map
-europe = world[(world['CONTINENT'] == 'Europe') & (world['SOVEREIGNT'] != 'Russia')] 
+europe = world[(world['CONTINENT'] == 'Europe') & (world['SOVEREIGNT'] != 'Russia')]
 europe = europe[(europe.geometry.centroid.y > 35) & (europe.geometry.centroid.y < 72) &
                 (europe.geometry.centroid.x > -30) & (europe.geometry.centroid.x < 50)]
 
@@ -34,7 +34,17 @@ europe = europe[(europe.geometry.centroid.y > 35) & (europe.geometry.centroid.y 
 graph.plot_europe(europe, plot_type = 'outline')
 
 # plot the europe, coloring the country accordingly to average temperature
-data_state_temperature = pd.read_csv('data/europe_city.csv')
-state_branches = data_state_temperature.groupby('Country')['AverageTemperature'].mean().reset_index()
+europe_csv = pd.read_csv('data/europe_city.csv')
+state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().reset_index()
 graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
+# Now we want to find the 10 cities with the highest/lower thermal excursion
+city_te = europe_csv.groupby(['City', 'Country'])['AverageTemperature'].agg(['max', 'min']).reset_index()
+city_te['thermal_excursion'] = city_te['max'] - city_te['min']
+city_te.columns = ['city', 'country', 'max_temp', 'min_temp', 'thermal_excursion']
+
+top_10_highest_excursion = city_te.nlargest(10, 'thermal_excursion')
+top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
+
+print(top_10_highest_excursion)
+print(top_10_lowest_excursion)
