@@ -1,3 +1,11 @@
-# Weather
-The dataset reports the temperature recorded in major cities around the world since 1750. Using this data, the project will need to provide an effective graphical visualization of the change in temperatures over time, highlighting the cities where the largest temperature ranges were recorded during different historical periods. For visualization of the data on a map, see geopandas.
-The program will also suggest, depending on the period considered, the best route to follow for a traveler who intends to move from Beijing to Los Angeles by moving step by step to the warmest major city among the 3 closest to him.
+# Weather Data Analysis and Visualization
+
+This project explores global temperature trends using historical data, with a focus on Europe. It uses `Pandas` for data handling, `GeoPandas` for mapping, and `Matplotlib` for visualizations.
+
+The project starts by cleaning global temperature data, fixing any missing values, and formatting coordinates for accurate maps. It then shows smoothed global temperature trends from 1750, focusing on data from 1840 onward for better accuracy. For Europe, it creates a color-coded map that highlights temperature differences by country, leaving out Russia and distant areas for a clearer view.
+
+One interesting feature is the calculation of thermal excursions (the difference between maximum and minimum temperatures) for European cities. This identifies the top 10 cities with the highest and lowest excursions, and these are plotted on the map for easy comparison.
+
+### Future Feature
+
+A new feature will help find the warmest route between two cities based on current temperatures. This tool will suggest a path through nearby cities with the highest average temperatures, helping users find the warmest way from one city to another.
