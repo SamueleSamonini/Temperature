@@ -33,5 +33,7 @@ def clean_coordinates(df, lat_col = 'Latitude', lon_col = 'Longitude'):
     # Apply cleaning function to latitude and longitude columns
     df[lat_col] = df[lat_col].apply(clean_lat_lon)
     df[lon_col] = df[lon_col].apply(clean_lat_lon)
+
+    df = df[~(df['City'] == 'Brest')]
     
     return df

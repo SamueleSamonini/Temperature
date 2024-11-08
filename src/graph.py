@@ -60,3 +60,19 @@ def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_ci
     ax.set_ylabel('Latitude')
     ax.set_aspect('auto')
     plt.show()
+
+def plot_path(europe, europe_city, path):
+    fig, ax = plt.subplots(figsize=(15, 10))
+    europe.plot(ax=ax, color='lightgrey')
+
+    path_coords = europe_city[europe_city['City'].isin(path)]
+    ax.plot(path_coords['Longitude'], path_coords['Latitude'], color='red', linewidth=2)
+    ax.scatter(path_coords['Longitude'], path_coords['Latitude'], color='blue', s=50)
+
+    for idx, row in path_coords.iterrows():
+        ax.annotate(row['City'], xy=(row['Longitude'], row['Latitude']), xytext=(3, 3), textcoords="offset points")
+    
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.title("Path of Cities Visited from Lisbon to Kiev")
+    plt.show()
