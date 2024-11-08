@@ -48,15 +48,11 @@ def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_ci
     # Plot highest excursion cities in red with bold labels
     if highest_cities is not None:
         ax.scatter(highest_cities['longitude'], highest_cities['latitude'], color='red', s=50, label='Top 10 Highest Excursion')
-        for _, row in highest_cities.iterrows():
-            ax.text(row['longitude'], row['latitude'] + 0.3, row['city'], fontsize=10, color='grey', fontweight='bold', ha='center')
-
+        
     # Plot lowest excursion cities in blue with bold labels
     if lowest_cities is not None:
         ax.scatter(lowest_cities['longitude'], lowest_cities['latitude'], color='blue', s=50, label='Top 10 Lowest Excursion')
-        for _, row in lowest_cities.iterrows():
-            ax.text(row['longitude'], row['latitude'] + 0.3, row['city'], fontsize=10, color='grey', fontweight='bold', ha='center')
-    
+        
     ax.legend()
 
     # Set labels and aspect

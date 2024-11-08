@@ -3,6 +3,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import csv_cleaner
 import graph
+import trip
 import sys
 import csv
 
@@ -39,7 +40,7 @@ state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().rese
 graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
 # we must clean the cordinates, because it contains some char value like N for North
-df = csv_cleaner.clean_coordinates(europe_csv, lat_col='Latitude', lon_col='Longitude')
+df = csv_cleaner.clean_coordinates(europe_csv, lat_col = 'Latitude', lon_col = 'Longitude')
 
 # Now we want to find the 10 cities with the highest/lower thermal excursion
 city_te = europe_csv.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AverageTemperature'].agg(['max', 'min']).reset_index()
@@ -54,3 +55,5 @@ print(top_10_lowest_excursion)
 
 # plot the europe
 graph.plot_europe(europe, plot_type='outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
+
+europe_city = trip.trip_calculator(europe_csv)

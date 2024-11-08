@@ -15,6 +15,7 @@ def data_clean_global_temperatures(csv_path):
     return(data_clean)
 
 def clean_coordinates(df, lat_col = 'Latitude', lon_col = 'Longitude'):
+    df['dt'] = pd.to_datetime(df['dt'])
     def clean_lat_lon(value):
         # Remove non-numeric characters except for "N", "S", "E", and "W"
         if isinstance(value, str):
