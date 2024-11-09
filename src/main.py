@@ -15,12 +15,12 @@ print(data_cleaned)
 
 # we want a graph to visualize better the change of temperatures
 data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-#graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
+graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
 
 # we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
 data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
 data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
-#graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
 # load into the project the map of the world
 world = gpd.read_file("map/ne_10m_admin_0_countries.shp") 
@@ -37,7 +37,7 @@ europe = europe[(europe.geometry.centroid.y > 35) & (europe.geometry.centroid.y 
 # plot the europe, coloring the country accordingly to average temperature
 europe_csv = pd.read_csv('data/europe_city.csv')
 state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().reset_index()
-#graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
+graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
 # we must clean the cordinates, because it contains some char value like N for North
 df = csv_cleaner.clean_coordinates(europe_csv, lat_col = 'Latitude', lon_col = 'Longitude')
@@ -54,7 +54,7 @@ print(top_10_highest_excursion)
 print(top_10_lowest_excursion)
 
 # plot the europe
-#graph.plot_europe(europe, plot_type='outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
+graph.plot_europe(europe, plot_type='outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
 
 cities_trip = trip.trip_calculator(europe_csv)
 
@@ -77,7 +77,7 @@ gdf_visited.plot(ax=ax, color='blue', marker='o', markersize=50, label='Visited 
 plt.plot(gdf_visited['Longitude'], gdf_visited['Latitude'], color='red', linewidth=2, linestyle='-', label='Route')
 
 plt.legend()
-plt.title("Percorso delle Città Visitate da Lisbon a Kiev")
+plt.title("Percorso")
 plt.xlabel("Longitude")
 plt.ylabel("Latitude")
 

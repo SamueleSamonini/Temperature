@@ -58,7 +58,15 @@ def trip_calculator(europe_csv):
                     city_deleted.add(city)
 
     start_city = input('Insert start city: ')
+    while start_city not in europe_city['City'].values:
+        print("Error, the city is not present in the df!!")
+        start_city = input('Insert start city: ')
+    
     final_city = input('Insert final city: ')
+    while final_city not in europe_city['City'].values:
+        print("Error, the city is not present in the df!!")
+        final_city = input('Insert start city: ')
+        
     cities_already_visited.append(start_city)
 
     # Limit the number of iterations
