@@ -76,3 +76,29 @@ def plot_path(europe, europe_city, path):
     plt.ylabel("Latitude")
     plt.title("Path of Cities Visited from Lisbon to Kiev")
     plt.show()
+
+def plot_trip(europe, cities_trip, europe_csv):
+    visited_cities = pd.DataFrame({
+        'City': cities_trip,
+        'Latitude': [europe_csv[europe_csv['City'] == city]['Latitude'].values[0] for city in cities_trip],
+        'Longitude': [europe_csv[europe_csv['City'] == city]['Longitude'].values[0] for city in cities_trip]
+    })
+    
+    gdf_visited = gpd.GeoDataFrame(
+        visited_cities,
+        geometry = gpd.points_from_xy(visited_cities['Longitude'], visited_cities['Latitude']),
+        crs="EPSG:4326"
+    )
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    europe.plot(ax=ax, color='lightgrey', edgecolor='black')
+
+    gdf_visited.plot(ax=ax, color='blue', marker='o', markersize=50, label='Visited Cities')
+    plt.plot(gdf_visited['Longitude'], gdf_visited['Latitude'], color='red', linewidth=2, linestyle='-', label='Route')
+
+    plt.legend()
+    plt.title("Percorso")
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+
+    plt.show()
