@@ -132,7 +132,10 @@ elif section == "Europe Map & Temperature":
 
         return fig
     '''
-
+    st.write("europe_csv.csv")
+    st.dataframe(europe_csv.head(100), use_container_width=True)
+    st.write("state_branches")
+    st.dataframe(state_branches, use_container_width=True)
     st.write("Now, using the data contained in europe_city.csv, we will analyze all temperature data, calculate an average for each country, and visualize the results on a map.")
     st.code(code3, language = 'python')
     st.write("Europe Temperature Map")
@@ -146,14 +149,28 @@ elif section == "Europe Map & Temperature":
     top_10_highest_excursion = city_te.nlargest(10, 'thermal_excursion')
     top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
 
+    # plot the europe
+    graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
+    
+    code4 = '''
+    city_te = europe_csv.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AverageTemperature'].agg(['max', 'min']).reset_index()
+    city_te['thermal_excursion'] = city_te['max'] - city_te['min']
+    city_te.columns = ['city', 'country', 'latitude', 'longitude', 'max_temp', 'min_temp', 'thermal_excursion']
+
+    top_10_highest_excursion = city_te.nlargest(10, 'thermal_excursion')
+    top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
+
+    graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
+    '''
+
+    st.code(code4, language = 'python')
+
     st.write("Top 10 Cities with Highest Thermal Excursion")
     st.dataframe(top_10_highest_excursion, use_container_width=True)
     
     st.write("Top 10 Cities with lowest Thermal Excursion")
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
 
-    # plot the europe
-    graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
     st.pyplot(graph4)
 elif section == "Trip Calculator":
     st.header("Trip Calculator Based on Temperature")
