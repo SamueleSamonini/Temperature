@@ -3,6 +3,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
+import plotly.express as px
 import inspect
 import csv_cleaner
 import graph
@@ -199,6 +200,26 @@ elif section == "Europe Map & Temperature":
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
 
     st.pyplot(graph4)
+
+    europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
+    europe = europe.to_crs(epsg=4326)
+    
+    geojson_data = europe.__geo_interface__
+    
+    fig_interactive_map = px.choropleth_mapbox(
+        europe,
+        geojson=geojson_data,
+        locations=europe.index,
+        color="AverageTemperature",
+        hover_name="SOVEREIGNT",  # Hover info can include country names
+        color_continuous_scale="temps",
+        range_color=(2, 16),  # Adjust based on your data range
+        mapbox_style="carto-positron",
+        center={"lat": 50, "lon": 10},  # Adjust to focus on Europe
+        zoom=3,
+        title="Europe - Average Temperature by Country from 1740 to 2015"
+    )
+    st.plotly_chart(fig_interactive_map)
 elif section == "Trip Calculator":
     st.header("Trip Calculator Based on Temperature")
 
