@@ -62,7 +62,9 @@ def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_ci
     ax.set_xlabel('Longitude')
     ax.set_ylabel('Latitude')
     ax.set_aspect('auto')
-    plt.show()
+
+    return fig
+    # plt.show()
 
 def plot_path(europe, europe_city, path):
     fig, ax = plt.subplots(figsize=(15, 10))

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import KDTree
 
-def trip_calculator(europe_csv):
+def trip_calculator(europe_csv, start_city, final_city):
     recent_temperature_df = europe_csv[europe_csv['dt'] >= '2005-01-01']
     europe_city = recent_temperature_df.groupby(['City', 'Latitude', 'Longitude'])['AverageTemperature'].mean().reset_index()
 
@@ -57,15 +57,15 @@ def trip_calculator(europe_csv):
                 if city != highest_temp_city:
                     city_deleted.add(city)
 
-    start_city = input('Insert start city: ')
-    while start_city not in europe_city['City'].values:
-        print("Error, the city is not present in the df!!")
-        start_city = input('Insert start city: ')
+    # start_city = input('Insert start city: ')
+    # while start_city not in europe_city['City'].values:
+    #     print("Error, the city is not present in the df!!")
+    #     start_city = input('Insert start city: ')
     
-    final_city = input('Insert final city: ')
-    while final_city not in europe_city['City'].values:
-        print("Error, the city is not present in the df!!")
-        final_city = input('Insert start city: ')
+    # final_city = input('Insert final city: ')
+    # while final_city not in europe_city['City'].values:
+    #     print("Error, the city is not present in the df!!")
+    #     final_city = input('Insert start city: ')
         
     cities_already_visited.append(start_city)
 
