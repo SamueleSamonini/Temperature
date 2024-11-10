@@ -2,6 +2,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import streamlit as st
+import altair as alt
 import inspect
 import csv_cleaner
 import graph
@@ -36,7 +37,7 @@ europe_csv = pd.read_csv('data/europe_city.csv')
 europe_csv = csv_cleaner.clean_coordinates(europe_csv, lat_col = 'Latitude', lon_col = 'Longitude')
 
 if section == "Global Temperature Trends":
-    st.header("Global Temperature Trends")
+    st.header("Global Temperature Trends", divider = "gray")
 
     # Display Cleaned Data
     st.write("Global temperature data, these are the data that we use to create the two graphs")
@@ -44,8 +45,11 @@ if section == "Global Temperature Trends":
 
     # we want a graph to visualize better the change of temperatures
     data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
+    data_cleaned.set_index(data_cleaned['dt'], inplace=True)
+    
+    # graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
 
+    st.divider()
     st.write("We first filter the data, and after we call a function for create the plot: ")
     
     code1 = '''
@@ -66,14 +70,35 @@ if section == "Global Temperature Trends":
         return fig
         # plt.show()
     '''
+
+    chart_data = pd.DataFrame(
+    {
+        "Year": data_cleaned['dt'],
+        "Temperature (°C)": data_cleaned['smoothedtemperature'],
+    }
+    )
+
+    start_year_chart = st.slider("Select Start Year", min_value=1750, max_value=chart_data['Year'].dt.year.max(), value=1750)
+    st.write(" ")
+
+    filtered_data = chart_data[chart_data['Year'].dt.year >= start_year_chart]
+
+    alt_chart_graph = alt.Chart(filtered_data).mark_line(color="#CD9077").encode(
+        x = alt.X('Year:T', title='Year'),
+        y = alt.Y('Temperature (°C):Q', title = 'Temperature (°C)', scale = alt.Scale(domain=[6, 10]))
+        ).properties(
+        width=700,
+        height=400
+    )
     
+    st.altair_chart(alt_chart_graph, use_container_width=True)
     st.code(code1, language = 'python')
-    st.pyplot(graph1)
+    # st.pyplot(graph1)
 
     # we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
-    data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
-    data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+    # data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
+    # data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    # graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
     code2 = '''
     # main.py
@@ -82,9 +107,10 @@ if section == "Global Temperature Trends":
     graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
     st.pyplot(graph2)
     '''
+
     st.write("In the first graph, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, we remove these dates and display only the data from 1840 to 2010")
     st.code(code2, language = 'python')
-    st.pyplot(graph2)
+    #st.pyplot(graph2)
 elif section == "Europe Map & Temperature":
     st.header("Europe Map & Temperature")
     # plot the europe
@@ -132,6 +158,7 @@ elif section == "Europe Map & Temperature":
 
         return fig
     '''
+
     st.write("europe_csv.csv")
     st.dataframe(europe_csv.head(100), use_container_width=True)
     st.write("state_branches")
