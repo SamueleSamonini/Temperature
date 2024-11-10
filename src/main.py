@@ -1,26 +1,76 @@
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import streamlit as st
+import inspect
 import csv_cleaner
 import graph
 import trip
 import sys
 import csv
 
-# first of all we load the CSV file called GlobalTemperatures
+# Streamlit title and description
+st.title("European Temperature Analysis Mapping")
+st.write("This application analyzes temperature data across Europe and provides insights into average temperatures and thermal excursions. The program also includes a function that allows users to input a starting city A and a final city B, creating an itinerary by selecting the warmest city from a pool of three options until reaching the target city B.")
+
+# We create the sidebar menu using streamlit
+st.sidebar.title("Section")
+section = st.sidebar.radio("Choose a Section", ("Global Temperature Trends", "Europe Map & Temperature", "Trip Calculator"))
+
+# we load the CSV file called GlobalTemperatures, and we clean it
 csv_path = 'data/GlobalTemperatures.csv'
 data_cleaned = csv_cleaner.data_clean_global_temperatures(csv_path)
 
-print(data_cleaned)
+if section == "Global Temperature Trends":
+    st.header("Global Temperature Trends")
 
-# we want a graph to visualize better the change of temperatures
-data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
+    # Display Cleaned Data
+    st.write("Global temperature data, these are the data that we use to create the two graphs")
+    st.write(data_cleaned.head(100))
 
-# we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
-data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
-data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
-graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+    # we want a graph to visualize better the change of temperatures
+    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
+
+    st.write("We first filter the data, and after we call a function for create the plot: ")
+    
+    code1 = '''
+    # main.py
+    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
+    st.pyplot(graph1)
+
+    # graph.py
+    def temperature_graph(data_temperature_graph, color_graph, title_temperature):
+        fig, ax = plt.subplots(figsize=(12, 7))
+        ax.plot(data_temperature_graph['dt'], data_temperature_graph['smoothedtemperature'], label='Average temperature', color=color_graph)
+        ax.set_title(title_temperature)
+        ax.set_xlabel('Year')
+        ax.set_ylabel('Temperature (°C)')
+        ax.grid(True)
+
+        return fig
+        # plt.show()
+    '''
+    
+    st.code(code1, language = 'python')
+    st.pyplot(graph1)
+
+    # we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
+    data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
+    data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+
+    code2 = '''
+    # main.py
+    data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
+    data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
+    st.pyplot(graph2)
+    '''
+    st.write("In the first graph, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, we remove these dates and display only the data from 1840 to 2010")
+    st.code(code2, language = 'python')
+    st.pyplot(graph2)
 
 # load into the project the map of the world
 world = gpd.read_file("map/ne_10m_admin_0_countries.shp") 

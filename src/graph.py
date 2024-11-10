@@ -12,13 +12,16 @@ def temperature_graph(data_temperature_graph, color_graph, title_temperature):
     - color_graph: The color of the graph.
     - title_temperature: the title of the graph.
     """
-    plt.figure(figsize = (12, 6))
-    plt.plot(data_temperature_graph['dt'], data_temperature_graph['smoothedtemperature'], label = 'Average temperature', color = color_graph)
-    plt.title(title_temperature)
-    plt.xlabel('Year')
-    plt.ylabel('Temperature (°C)')
-    plt.grid(True)
-    plt.show()
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax.plot(data_temperature_graph['dt'], data_temperature_graph['smoothedtemperature'], label='Average temperature', color=color_graph)
+    ax.set_title(title_temperature)
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Temperature (°C)')
+    ax.grid(True)
+
+    return fig
+    # plt.show()
+
 
 def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_cities = None, lowest_cities = None):
     """
