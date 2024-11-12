@@ -32,6 +32,11 @@ europe = world[(world['CONTINENT'] == 'Europe') & (world['SOVEREIGNT'] != 'Russi
 europe = europe[(europe.geometry.centroid.y > 35) & (europe.geometry.centroid.y < 72) &
                 (europe.geometry.centroid.x > -30) & (europe.geometry.centroid.x < 50)]
 
+europe['SOVEREIGNT'] = europe['SOVEREIGNT'].replace({
+    "Czechia": "Czech Republic",
+    "Republic of Serbia": "Serbia"
+})
+
 europe_csv = pd.read_csv('data/europe_city.csv')
 
 # we must clean the cordinates, because it contains some char value like N for North
@@ -44,33 +49,14 @@ if section == "Global Temperature Trends":
     st.write("Global temperature data, these are the data that we use to create the two graphs")
     st.dataframe(data_cleaned.head(100), use_container_width = True)
 
+    # old version without streamlit
     # we want a graph to visualize better the change of temperatures
-    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    data_cleaned.set_index(data_cleaned['dt'], inplace=True)
-    
+    # data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
+    # data_cleaned.set_index(data_cleaned['dt'], inplace=True)
     # graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
 
     st.divider()
     st.write("We first filter the data, and after we call a function for create the plot: ")
-    
-    code1 = '''
-    # main.py
-    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
-    st.pyplot(graph1)
-
-    # graph.py
-    def temperature_graph(data_temperature_graph, color_graph, title_temperature):
-        fig, ax = plt.subplots(figsize=(12, 7))
-        ax.plot(data_temperature_graph['dt'], data_temperature_graph['smoothedtemperature'], label='Average temperature', color=color_graph)
-        ax.set_title(title_temperature)
-        ax.set_xlabel('Year')
-        ax.set_ylabel('Temperature (°C)')
-        ax.grid(True)
-
-        return fig
-        # plt.show()
-    '''
 
     chart_data = pd.DataFrame(
     {
@@ -84,6 +70,7 @@ if section == "Global Temperature Trends":
 
     filtered_data = chart_data[chart_data['Year'].dt.year >= start_year_chart]
 
+    # temperature graph
     alt_chart_graph = alt.Chart(filtered_data).mark_line(color="#CD9077").encode(
         x = alt.X('Year:T', title='Year'),
         y = alt.Y('Temperature (°C):Q', title = 'Temperature (°C)', scale = alt.Scale(domain=[6, 10]))
@@ -91,27 +78,30 @@ if section == "Global Temperature Trends":
         width=700,
         height=400
     )
-    
-    st.altair_chart(alt_chart_graph, use_container_width=True)
-    st.code(code1, language = 'python')
-    # st.pyplot(graph1)
 
+    # trend line
+    trend_line = alt.Chart(filtered_data).transform_regression(
+        'Year', 'Temperature (°C)', method='linear'
+    ).mark_line(color="blue", opacity=0.7).encode(
+        x = alt.X('Year:T'),
+        y = alt.Y('Temperature (°C):Q')
+    )
+
+    complete_temperature_chart = alt_chart_graph + trend_line
+    
+    st.altair_chart(complete_temperature_chart, use_container_width=True)
+
+    # old version without streamlit
     # we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
     # data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
     # data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
     # graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
-    code2 = '''
-    # main.py
-    data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
-    data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
-    st.pyplot(graph2)
-    '''
+    st.write("""
+        - In the first part, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, we remove these dates and display only the data from 1840 to 2010.
+        - Starting from the year 1975, we observe a significant change in temperature, where the effects of global warming become evident.
+    """)
 
-    st.write("In the first graph, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, we remove these dates and display only the data from 1840 to 2010")
-    st.code(code2, language = 'python')
-    #st.pyplot(graph2)
 elif section == "Europe Map & Temperature":
     st.header("Europe Map & Temperature")
     # plot the europe
@@ -119,55 +109,51 @@ elif section == "Europe Map & Temperature":
 
     # plot the europe, coloring the country accordingly to average temperature
     state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().reset_index()
-    graph3 = graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
+    countries_in_europe = europe.groupby('SOVEREIGNT')
 
-    code3 = '''
-    # main.py
-    state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().reset_index()
-    graph3 = graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
-
-    # graph.py
-    def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_cities = None, lowest_cities = None):
-        fig, ax = plt.subplots(figsize=(12, 7))
-
-        if plot_type == 'outline':
-            # Plot just the outline of Europe
-            europe.plot(ax=ax, color = 'white', edgecolor = 'black')
-            ax.set_title('Europe')
-        elif plot_type == 'temperature' and state_branches is not None:
-            # Merge temperature data with Europe GeoDataFrame
-            europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
-            
-            # Plot average temperature by country
-            europe.plot(column='AverageTemperature', cmap='coolwarm', legend=True, edgecolor='black', ax=ax)
-            ax.set_title('Europe - Average Temperature by Country from 1740 to 2015')
-
-        # Plot highest excursion cities in red with bold labels
-        if highest_cities is not None:
-            ax.scatter(highest_cities['longitude'], highest_cities['latitude'], color='red', s=50, label='Top 10 Highest Excursion')
-            
-        # Plot lowest excursion cities in blue with bold labels
-        if lowest_cities is not None:
-            ax.scatter(lowest_cities['longitude'], lowest_cities['latitude'], color='blue', s=50, label='Top 10 Lowest Excursion')
-            
-        ax.legend()
-
-        # Set labels and aspect
-        ax.set_xlabel('Longitude')
-        ax.set_ylabel('Latitude')
-        ax.set_aspect('auto')
-
-        return fig
-    '''
+    # old version without streamlit
+    # graph3 = graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
     st.write("europe_csv.csv")
     st.dataframe(europe_csv.head(100), use_container_width=True)
     st.write("state_branches")
     st.dataframe(state_branches, use_container_width=True)
+    st.write("europe")
+    st.dataframe(countries_in_europe)
     st.write("Now, using the data contained in europe_city.csv, we will analyze all temperature data, calculate an average for each country, and visualize the results on a map.")
-    st.code(code3, language = 'python')
-    st.write("Europe Temperature Map")
-    st.pyplot(graph3)
+
+    europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
+    europe = europe.to_crs(epsg=4326)
+    
+    geojson_data = europe.__geo_interface__
+
+    # Create the interactive map
+    fig_interactive_map = px.choropleth_mapbox(
+        europe,
+        geojson = geojson_data,
+        locations = europe.index,
+        color = "AverageTemperature",
+        hover_name = "SOVEREIGNT",  # Hover info can include country names
+        color_continuous_scale = "temps",
+        range_color = (2, 16),  # Adjust based on your data range
+        mapbox_style = "carto-positron",
+        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
+        zoom = 2,
+        title = "Europe - Average Temperature by Country from 1740 to 2015"
+    )
+
+    # Configure the color bar (legend) position
+    fig_interactive_map.update_layout(
+        coloraxis_colorbar=dict(
+            orientation = "h",  # Set horizontal orientation for the legend
+            y = -0.2,           # Position the legend below the map (adjust value to move lower or higher)
+            x = 0.5,            # Center the color bar horizontally
+            xanchor = "center", # Anchor the bar at its center
+            title = "Avg Temperature (°C)"  # Label for the color bar
+        )
+    )
+
+    st.plotly_chart(fig_interactive_map)
 
     # Now we want to find the 10 cities with the highest/lower thermal excursion
     city_te = europe_csv.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AverageTemperature'].agg(['max', 'min']).reset_index()
@@ -179,19 +165,6 @@ elif section == "Europe Map & Temperature":
 
     # plot the europe
     graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
-    
-    code4 = '''
-    city_te = europe_csv.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AverageTemperature'].agg(['max', 'min']).reset_index()
-    city_te['thermal_excursion'] = city_te['max'] - city_te['min']
-    city_te.columns = ['city', 'country', 'latitude', 'longitude', 'max_temp', 'min_temp', 'thermal_excursion']
-
-    top_10_highest_excursion = city_te.nlargest(10, 'thermal_excursion')
-    top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
-
-    graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
-    '''
-
-    st.code(code4, language = 'python')
 
     st.write("Top 10 Cities with Highest Thermal Excursion")
     st.dataframe(top_10_highest_excursion, use_container_width=True)
@@ -200,26 +173,7 @@ elif section == "Europe Map & Temperature":
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
 
     st.pyplot(graph4)
-
-    europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
-    europe = europe.to_crs(epsg=4326)
     
-    geojson_data = europe.__geo_interface__
-    
-    fig_interactive_map = px.choropleth_mapbox(
-        europe,
-        geojson=geojson_data,
-        locations=europe.index,
-        color="AverageTemperature",
-        hover_name="SOVEREIGNT",  # Hover info can include country names
-        color_continuous_scale="temps",
-        range_color=(2, 16),  # Adjust based on your data range
-        mapbox_style="carto-positron",
-        center={"lat": 50, "lon": 10},  # Adjust to focus on Europe
-        zoom=3,
-        title="Europe - Average Temperature by Country from 1740 to 2015"
-    )
-    st.plotly_chart(fig_interactive_map)
 elif section == "Trip Calculator":
     st.header("Trip Calculator Based on Temperature")
 
