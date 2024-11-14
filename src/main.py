@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
 import plotly.express as px
+import plotly.graph_objects as go
 import inspect
 import csv_cleaner
 import graph
@@ -55,9 +56,11 @@ if section == "Global Temperature Trends":
     # data_cleaned.set_index(data_cleaned['dt'], inplace=True)
     # graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
 
+
     st.divider()
     st.write("We first filter the data, and after we call a function for create the plot: ")
 
+    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
     chart_data = pd.DataFrame(
     {
         "Year": data_cleaned['dt'],
@@ -75,8 +78,8 @@ if section == "Global Temperature Trends":
         x = alt.X('Year:T', title='Year'),
         y = alt.Y('Temperature (°C):Q', title = 'Temperature (°C)', scale = alt.Scale(domain=[6, 10]))
         ).properties(
-        width=700,
-        height=400
+        width = 700,
+        height = 400
     )
 
     # trend line
@@ -128,7 +131,7 @@ elif section == "Europe Map & Temperature":
     geojson_data = europe.__geo_interface__
 
     # Create the interactive map
-    fig_interactive_map = px.choropleth_mapbox(
+    fig_interactive_map_temperature = px.choropleth_mapbox(
         europe,
         geojson = geojson_data,
         locations = europe.index,
@@ -138,13 +141,14 @@ elif section == "Europe Map & Temperature":
         range_color = (2, 16),  # Adjust based on your data range
         mapbox_style = "carto-positron",
         center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
-        zoom = 2,
-        title = "Europe - Average Temperature by Country from 1740 to 2015"
+        zoom = 3,
+        title = "Europe - Average Temperature by Country from 1740 to 2015",
+        height = 700
     )
 
     # Configure the color bar (legend) position
-    fig_interactive_map.update_layout(
-        coloraxis_colorbar=dict(
+    fig_interactive_map_temperature.update_layout(
+        coloraxis_colorbar = dict(
             orientation = "h",  # Set horizontal orientation for the legend
             y = -0.2,           # Position the legend below the map (adjust value to move lower or higher)
             x = 0.5,            # Center the color bar horizontally
@@ -153,7 +157,7 @@ elif section == "Europe Map & Temperature":
         )
     )
 
-    st.plotly_chart(fig_interactive_map)
+    st.plotly_chart(fig_interactive_map_temperature)
 
     # Now we want to find the 10 cities with the highest/lower thermal excursion
     city_te = europe_csv.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AverageTemperature'].agg(['max', 'min']).reset_index()
@@ -164,15 +168,61 @@ elif section == "Europe Map & Temperature":
     top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
 
     # plot the europe
-    graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
+    # old version
+    # graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
 
     st.write("Top 10 Cities with Highest Thermal Excursion")
     st.dataframe(top_10_highest_excursion, use_container_width=True)
     
     st.write("Top 10 Cities with lowest Thermal Excursion")
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
+    
+    # old version
+    # st.pyplot(graph4)
 
-    st.pyplot(graph4)
+    fig_interactive_map_thermal_excursion = px.choropleth_mapbox(
+        europe,
+        geojson = geojson_data,
+        #locations = europe.index,
+        mapbox_style = "carto-positron",
+        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
+        zoom = 3,
+        title = "Europe - ten cities with the highest and lowest thermal excursion",
+        height = 700
+    )
+
+    # Add scatter layer for top 10 cities with red markers
+    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
+        lat=top_10_highest_excursion['latitude'],
+        lon=top_10_highest_excursion['longitude'],
+        mode='markers',
+        name = "Highest Thermal Excursions",
+        marker=dict(size=10, color='red'),
+        text=top_10_highest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
+        hoverinfo='text'
+    ))
+
+    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
+        lat=top_10_lowest_excursion['latitude'],
+        lon=top_10_lowest_excursion['longitude'],
+        mode='markers',
+        name = "Lowest Thermal Excursions",
+        marker=dict(size=10, color='blue'),
+        text=top_10_lowest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
+        hoverinfo='text'
+    ))
+
+    fig_interactive_map_thermal_excursion.update_layout(
+        legend=dict(
+            orientation="h",  # Horizontal orientation
+            yanchor="bottom",
+            y=-0.1,  # Position below the map
+            xanchor="center",
+            x=0.5
+        )
+    )
+
+    st.plotly_chart(fig_interactive_map_thermal_excursion)
     
 elif section == "Trip Calculator":
     st.header("Trip Calculator Based on Temperature")
@@ -183,11 +233,45 @@ elif section == "Trip Calculator":
     if start_city and final_city:
         if start_city in europe_csv['City'].values and final_city in europe_csv['City'].values:
             cities_trip = trip.trip_calculator(europe_csv, start_city, final_city)
-            st.write(cities_trip)
+            st.write("Cities visited", cities_trip)
+
+            # Ensure cities are in the order of visit for plotting
+            trip_coords = europe_csv.set_index('City').loc[cities_trip].reset_index()
+
+            # Create an interactive map with Plotly
+            fig = go.Figure()
+
+            # Plot the path in the correct order with lines connecting the cities in the trip order
+            fig.add_trace(go.Scattermapbox(
+                lat=trip_coords['Latitude'],
+                lon=trip_coords['Longitude'],
+                mode='markers+lines',
+                marker=dict(size=10, color="red"),
+                line=dict(width=2, color="blue"),
+                text=trip_coords['City'],
+                hoverinfo="text"
+            ))
+
+            # Set map layout
+            fig.update_layout(
+                mapbox=dict(
+                    style="carto-positron",
+                    center=dict(lat=50, lon=10),  # Center over Europe
+                    zoom=3
+                ),
+                showlegend=False,
+                height=700,
+                title="Interactive Trip Path"
+            )
+
+            # Display the interactive map in Streamlit
+            st.plotly_chart(fig)
+
+            # old version
+            # plot the trip only if cities_trip is successfully calculated
+            # graph5 = graph.plot_trip(europe, cities_trip, europe_csv)
+            # st.pyplot(graph5)
         else:
             st.write("One or both cities are not present in the dataset. Please enter valid city names.")
     else:
         st.info("Please enter both a start city and a final city to calculate the trip.")
-
-    graph5 = graph.plot_trip(europe, cities_trip, europe_csv)
-    st.pyplot(graph5)
