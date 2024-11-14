@@ -255,57 +255,72 @@ elif section == "Trip Calculator":
 
     st.markdown("""
         <div style='text-align: justify;'>
-            <b> In this section of the app, we use a GeoPandas world map and merge it with a dataframe containing extensive temperature data for cities and countries. We then display two interactive maps of Europe: the first shows the average temperature for each country, and the second highlights the 10 cities with the highest and lowest thermal excursions. </b>
+            <b> In this section of the app, we analyze temperature data to calculate a customized travel route across Europe based on user-selected cities.
+            Users can select a start city and a final city, and the app calculates a route that prioritizes the warmest nearby cities while avoiding revisits. 
+            This is achieved through distance calculations and temperature comparisons across selected cities. 
+            Additionally, an interactive map is generated to visually display the calculated route, with markers showing each visited city along the way.</b>
         </div> <br>
         """,
         unsafe_allow_html = True
     )
 
-    start_city = st.text_input("Insert Start City:", "")
-    final_city = st.text_input("Insert Final City:", "")
+    unique_cities_for_trip = europe_csv['City'].unique()
+    reversed_cities_for_trip = unique_cities_for_trip[::-1]
+
+    start_city = st.selectbox(
+        "Select the start city: ",
+        unique_cities_for_trip,
+        key = "start_city_selectbox", # we need to put a key because streamlit give us an error if we don't put it
+        placeholder = "No city selected"
+    )
+
+    final_city = st.selectbox(
+        "Select the start city: ",
+        reversed_cities_for_trip,
+        key = "final_city_selectbox",
+        placeholder = "No city selected"
+    )
 
     if start_city and final_city:
-        if start_city in europe_csv['City'].values and final_city in europe_csv['City'].values:
-            cities_trip = trip.trip_calculator(europe_csv, start_city, final_city)
-            st.write("Cities visited", cities_trip)
+        cities_trip = trip.trip_calculator(europe_csv, start_city, final_city)
+        st.write("Cities visited", cities_trip)
 
-            # Ensure cities are in the order of visit for plotting
-            trip_coords = europe_csv.set_index('City').loc[cities_trip].reset_index()
+        # Ensure cities are in the order of visit for plotting
+        trip_coords = europe_csv.set_index('City').loc[cities_trip].reset_index()
 
-            # Create an interactive map with Plotly
-            fig = go.Figure()
+        # Create an interactive map with Plotly
+        fig = go.Figure()
 
-            # Plot the path in the correct order with lines connecting the cities in the trip order
-            fig.add_trace(go.Scattermapbox(
-                lat=trip_coords['Latitude'],
-                lon=trip_coords['Longitude'],
-                mode='markers+lines',
-                marker=dict(size=10, color="red"),
-                line=dict(width=2, color="blue"),
-                text=trip_coords['City'],
-                hoverinfo="text"
-            ))
+        # Plot the path in the correct order with lines connecting the cities in the trip order
+        fig.add_trace(go.Scattermapbox(
+            lat=trip_coords['Latitude'],
+            lon=trip_coords['Longitude'],
+            mode='markers+lines',
+            marker=dict(size=10, color="red"),
+            line=dict(width=2, color="blue"),
+            text=trip_coords['City'],
+            hoverinfo="text"
+        ))
 
-            # Set map layout
-            fig.update_layout(
-                mapbox=dict(
-                    style="carto-positron",
-                    center=dict(lat=50, lon=10),  # Center over Europe
-                    zoom=3
-                ),
-                showlegend=False,
-                height=700,
-                title="Interactive Trip Path"
-            )
+        # Set map layout
+        fig.update_layout(
+            mapbox=dict(
+                style="carto-positron",
+                center=dict(lat=50, lon=10),  # Center over Europe
+                zoom=3
+            ),
+            showlegend=False,
+            height=700,
+            title="Interactive Trip Path"
+        )
 
-            # Display the interactive map in Streamlit
-            st.plotly_chart(fig)
+        # Display the interactive map in Streamlit
+        st.plotly_chart(fig)
 
-            # old version
-            # plot the trip only if cities_trip is successfully calculated
-            # graph5 = graph.plot_trip(europe, cities_trip, europe_csv)
-            # st.pyplot(graph5)
-        else:
-            st.write("One or both cities are not present in the dataset. Please enter valid city names.")
+        # old version
+        # plot the trip only if cities_trip is successfully calculated
+        # graph5 = graph.plot_trip(europe, cities_trip, europe_csv)
+        # st.pyplot(graph5)
+        
     else:
         st.info("Please enter both a start city and a final city to calculate the trip.")

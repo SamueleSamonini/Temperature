@@ -14,21 +14,18 @@ def trip_calculator(europe_csv, start_city, final_city):
     city_deleted = set()
 
     city_coords = europe_city[['Latitude', 'Longitude']].values
-    city_tree = KDTree(city_coords)
 
     def distance_calculation(current_coordinates, cities_not_visited):
-        # Get the indices of the closest cities from the KDTree, then map back to the original DataFrame
-        _, indices = city_tree.query([current_coordinates], k=len(europe_city))
+        # Calculate distances from the current city to all other cities in cities_not_visited
+        distances = np.sqrt(
+            (cities_not_visited['Latitude'].values - current_coordinates[0]) ** 2 +
+            (cities_not_visited['Longitude'].values - current_coordinates[1]) ** 2
+        )
         
-        # Filter the indices to include only those cities in `cities_not_visited`
-        valid_cities = []
-        for index in indices[0]:
-            city_name = europe_city.iloc[index]['City']
-            if city_name in cities_not_visited['City'].values:
-                valid_cities.append(city_name)
-            if len(valid_cities) == 3:  # Only keep the closest 3 valid cities
-                break
-        return valid_cities
+        # Get indices of the closest 3 cities
+        closest_indices = np.argsort(distances)[:3]
+        return cities_not_visited.iloc[closest_indices]['City'].tolist()
+
 
     def trip_3_cities(europe_city, cities_already_visited, final_city):
         current_city = cities_already_visited[-1]
