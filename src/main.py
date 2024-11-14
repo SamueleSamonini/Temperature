@@ -13,12 +13,11 @@ import sys
 import csv
 
 # Streamlit title and description
-st.title("European Temperature Analysis Mapping")
-st.write("This application analyzes temperature data across Europe and provides insights into average temperatures and thermal excursions. The program also includes a function that allows users to input a starting city A and a final city B, creating an itinerary by selecting the warmest city from a pool of three options until reaching the target city B.")
+st.title("European Temperature Analysis")
 
 # We create the sidebar menu using streamlit
 st.sidebar.title("Section")
-section = st.sidebar.radio("Choose a Section", ("Global Temperature Trends", "Europe Map & Temperature", "Trip Calculator"))
+section = st.sidebar.radio("Choose a Section", ("Global Temperature Trends", "Europe Temperature Map", "Trip Calculator"))
 
 # we load the CSV file called GlobalTemperatures, and we clean it
 csv_path = 'data/GlobalTemperatures.csv'
@@ -46,8 +45,16 @@ europe_csv = csv_cleaner.clean_coordinates(europe_csv, lat_col = 'Latitude', lon
 if section == "Global Temperature Trends":
     st.header("Global Temperature Trends", divider = "gray")
 
+    st.markdown("""
+        <div style='text-align: justify;'>
+            <b> In this section of the app, we use a dataframe containing global temperature data for each month from 1740 to 2015, which we visualize in an interactive graph. </b>
+        </div> <br>
+        """,
+        unsafe_allow_html = True
+    )
+
     # Display Cleaned Data
-    st.write("Global temperature data, these are the data that we use to create the two graphs")
+    st.write('These are the global temperature data that we use to create the graph below.')
     st.dataframe(data_cleaned.head(100), use_container_width = True)
 
     # old version without streamlit
@@ -58,7 +65,7 @@ if section == "Global Temperature Trends":
 
 
     st.divider()
-    st.write("We first filter the data, and after we call a function for create the plot: ")
+    st.write("We first clena the data, and after we call a function for create the plot: ")
 
     data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
     chart_data = pd.DataFrame(
@@ -100,13 +107,28 @@ if section == "Global Temperature Trends":
     # data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
     # graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
 
-    st.write("""
-        - In the first part, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, we remove these dates and display only the data from 1840 to 2010.
-        - Starting from the year 1975, we observe a significant change in temperature, where the effects of global warming become evident.
-    """)
+    # we use HTML and CSS to justify and display using bullet poin the data
+    st.markdown("""
+        <div style='text-align: justify;'>
+            <ul>
+                <li>In the first part, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, using the slider, you can remove these dates and display only the data from 1840 to 2010.</li>
+                <li>Starting from the year 1975, we observe a significant change in temperature, where the effects of global warming become evident.</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html = True
+    )
 
-elif section == "Europe Map & Temperature":
-    st.header("Europe Map & Temperature")
+elif section == "Europe Temperature Map":
+    st.header("Europe Temperature Map", divider = "gray")
+    st.markdown("""
+        <div style='text-align: justify;'>
+            <b> In this section of the app, we use a GeoPandas world map and merge it with a dataframe containing extensive temperature data for cities and countries. We then display two interactive maps of Europe: the first shows the average temperature for each country, and the second highlights the 10 cities with the highest and lowest thermal excursions. </b>
+        </div> <br>
+        """,
+        unsafe_allow_html = True
+    )
+    
     # plot the europe
     # graph.plot_europe(europe, plot_type = 'outline', city_te = city_te)
 
@@ -117,13 +139,9 @@ elif section == "Europe Map & Temperature":
     # old version without streamlit
     # graph3 = graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
-    st.write("europe_csv.csv")
-    st.dataframe(europe_csv.head(100), use_container_width=True)
-    st.write("state_branches")
+    st.write("Using the data in our dataframe, we will analyze all temperature records and calculate an average for each country. These are the results:")
     st.dataframe(state_branches, use_container_width=True)
-    st.write("europe")
-    st.dataframe(countries_in_europe)
-    st.write("Now, using the data contained in europe_city.csv, we will analyze all temperature data, calculate an average for each country, and visualize the results on a map.")
+    st.write("Now, we display the data on an interactive map:")
 
     europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
     europe = europe.to_crs(epsg=4326)
@@ -143,14 +161,15 @@ elif section == "Europe Map & Temperature":
         center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
         zoom = 3,
         title = "Europe - Average Temperature by Country from 1740 to 2015",
-        height = 700
+        height = 600
     )
 
     # Configure the color bar (legend) position
     fig_interactive_map_temperature.update_layout(
+        margin = dict (t = 30),
         coloraxis_colorbar = dict(
             orientation = "h",  # Set horizontal orientation for the legend
-            y = -0.2,           # Position the legend below the map (adjust value to move lower or higher)
+            y = -0.15,           # Position the legend below the map (adjust value to move lower or higher)
             x = 0.5,            # Center the color bar horizontally
             xanchor = "center", # Anchor the bar at its center
             title = "Avg Temperature (°C)"  # Label for the color bar
@@ -171,10 +190,15 @@ elif section == "Europe Map & Temperature":
     # old version
     # graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
 
-    st.write("Top 10 Cities with Highest Thermal Excursion")
+    st.markdown('''
+        <div style='text-align: justify;'>
+            In this phase, we calculate the minimum and maximum temperatures for each city, then determine the thermal excursion. Here are the results for the 10 cities with the highest thermal excursion:
+        <div> <br>''',
+        unsafe_allow_html = True
+    )
     st.dataframe(top_10_highest_excursion, use_container_width=True)
     
-    st.write("Top 10 Cities with lowest Thermal Excursion")
+    st.write("And the 10 cities with the lowest thermal excursion:")
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
     
     # old version
@@ -188,7 +212,7 @@ elif section == "Europe Map & Temperature":
         center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
         zoom = 3,
         title = "Europe - ten cities with the highest and lowest thermal excursion",
-        height = 700
+        height = 600
     )
 
     # Add scatter layer for top 10 cities with red markers
@@ -213,6 +237,7 @@ elif section == "Europe Map & Temperature":
     ))
 
     fig_interactive_map_thermal_excursion.update_layout(
+        margin = dict (t = 30),
         legend=dict(
             orientation="h",  # Horizontal orientation
             yanchor="bottom",
@@ -222,10 +247,19 @@ elif section == "Europe Map & Temperature":
         )
     )
 
+    st.write("Now, we display the data on an interactive map:")
     st.plotly_chart(fig_interactive_map_thermal_excursion)
     
 elif section == "Trip Calculator":
-    st.header("Trip Calculator Based on Temperature")
+    st.header("Trip Calculator Based on Temperature", divider = 'gray')
+
+    st.markdown("""
+        <div style='text-align: justify;'>
+            <b> In this section of the app, we use a GeoPandas world map and merge it with a dataframe containing extensive temperature data for cities and countries. We then display two interactive maps of Europe: the first shows the average temperature for each country, and the second highlights the 10 cities with the highest and lowest thermal excursions. </b>
+        </div> <br>
+        """,
+        unsafe_allow_html = True
+    )
 
     start_city = st.text_input("Insert Start City:", "")
     final_city = st.text_input("Insert Final City:", "")
