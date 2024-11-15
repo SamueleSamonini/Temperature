@@ -5,10 +5,7 @@ import streamlit as st
 import altair as alt
 import plotly.express as px
 import plotly.graph_objects as go
-import inspect
-import csv_cleaner
-import graph
-import trip
+from src import csv_cleaner, graph, trip
 import sys
 import csv
 
