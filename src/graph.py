@@ -122,3 +122,35 @@ def europe_thermal_excursion_map(europe, geojson_data, top_10_highest_excursion,
     )
 
     return fig_interactive_map_thermal_excursion
+
+def plot_trip_map(europe_csv, cities_trip):
+    # Ensure cities are in the order of visit for plotting
+    trip_coords = europe_csv.set_index('City').loc[cities_trip].reset_index()
+
+    # Create an interactive map with Plotly
+    fig = go.Figure()
+
+    # Plot the path in the correct order with lines connecting the cities in the trip order
+    fig.add_trace(go.Scattermapbox(
+        lat = trip_coords['Latitude'],
+        lon = trip_coords['Longitude'],
+        mode = 'markers+lines',
+        marker = dict(size=10, color="red"),
+        line = dict(width=2, color="blue"),
+        text = trip_coords['City'],
+        hoverinfo = "text"
+    ))
+
+    # Set map layout
+    fig.update_layout(
+        mapbox=dict(
+            style="carto-positron",
+            center=dict(lat=50, lon=10),  # Center over Europe
+            zoom=3
+        ),
+        showlegend=False,
+        height=700,
+        title="Interactive Trip Path"
+    )
+
+    return fig
