@@ -54,13 +54,6 @@ if section == "Global Temperature Trends":
     st.write('These are the global temperature data that we use to create the graph below.')
     st.dataframe(data_cleaned.head(100), use_container_width = True)
 
-    # old version without streamlit
-    # we want a graph to visualize better the change of temperatures
-    # data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    # data_cleaned.set_index(data_cleaned['dt'], inplace=True)
-    # graph1 = graph.temperature_graph(data_cleaned, 'green', 'Average world temperature 1750/2015')
-
-
     st.divider()
     st.write("We first clena the data, and after we call a function for create the plot: ")
 
@@ -98,12 +91,6 @@ if section == "Global Temperature Trends":
     
     st.altair_chart(complete_temperature_chart, use_container_width=True)
 
-    # old version without streamlit
-    # we saw that the first data of the graph are not correct, probably. So we print only the data starting from 1840
-    # data_filtered = data_cleaned[(data_cleaned['dt'] >= '1840-01-01') & (data_cleaned['dt'] <= '2015-12-31')]
-    # data_filtered['smoothedtemperature'] = data_filtered['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    # graph2 = graph.temperature_graph(data_filtered, 'red', 'Average world temperature 1840/2015')
-
     # we use HTML and CSS to justify and display using bullet poin the data
     st.markdown("""
         <div style='text-align: justify;'>
@@ -125,16 +112,10 @@ elif section == "Europe Temperature Map":
         """,
         unsafe_allow_html = True
     )
-    
-    # plot the europe
-    # graph.plot_europe(europe, plot_type = 'outline', city_te = city_te)
 
     # plot the europe, coloring the country accordingly to average temperature
     state_branches = europe_csv.groupby('Country')['AverageTemperature'].mean().reset_index()
     countries_in_europe = europe.groupby('SOVEREIGNT')
-
-    # old version without streamlit
-    # graph3 = graph.plot_europe(europe, plot_type = 'temperature', state_branches = state_branches)
 
     st.write("Using the data in our dataframe, we will analyze all temperature records and calculate an average for each country. These are the results:")
     st.dataframe(state_branches, use_container_width=True)
@@ -183,10 +164,6 @@ elif section == "Europe Temperature Map":
     top_10_highest_excursion = city_te.nlargest(10, 'thermal_excursion')
     top_10_lowest_excursion = city_te.nsmallest(10, 'thermal_excursion')
 
-    # plot the europe
-    # old version
-    # graph4 = graph.plot_europe(europe, plot_type = 'outline', highest_cities = top_10_highest_excursion, lowest_cities = top_10_lowest_excursion)
-
     st.markdown('''
         <div style='text-align: justify;'>
             In this phase, we calculate the minimum and maximum temperatures for each city, then determine the thermal excursion. Here are the results for the 10 cities with the highest thermal excursion:
@@ -197,9 +174,6 @@ elif section == "Europe Temperature Map":
     
     st.write("And the 10 cities with the lowest thermal excursion:")
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
-    
-    # old version
-    # st.pyplot(graph4)
 
     fig_interactive_map_thermal_excursion = px.choropleth_mapbox(
         europe,
@@ -313,11 +287,6 @@ elif section == "Trip Calculator":
 
         # Display the interactive map in Streamlit
         st.plotly_chart(fig)
-
-        # old version
-        # plot the trip only if cities_trip is successfully calculated
-        # graph5 = graph.plot_trip(europe, cities_trip, europe_csv)
-        # st.pyplot(graph5)
         
     else:
         st.info("Please enter both a start city and a final city to calculate the trip.")

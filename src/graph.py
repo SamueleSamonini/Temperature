@@ -3,6 +3,7 @@ import geopandas as gpd
 import pandas as pd
 import csv
 
+# delete
 def temperature_graph(data_temperature_graph, color_graph, title_temperature):
     """
     Plot graph
@@ -22,7 +23,7 @@ def temperature_graph(data_temperature_graph, color_graph, title_temperature):
     return fig
     # plt.show()
 
-
+# delete
 def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_cities = None, lowest_cities = None):
     """
     Plot a map of Europe with optional city points for highest and lowest thermal excursions.
@@ -66,6 +67,7 @@ def plot_europe(europe, plot_type = 'outline', state_branches = None, highest_ci
     return fig
     # plt.show()
 
+# delete
 def plot_path(europe, europe_city, path):
     fig, ax = plt.subplots(figsize=(15, 10))
     europe.plot(ax=ax, color='lightgrey')
@@ -82,6 +84,7 @@ def plot_path(europe, europe_city, path):
     plt.title("Path of Cities Visited from Lisbon to Kiev")
     plt.show()
 
+# delete
 def plot_trip(europe, cities_trip, europe_csv):
     visited_cities = pd.DataFrame({
         'City': cities_trip,
