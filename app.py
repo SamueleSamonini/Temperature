@@ -57,46 +57,14 @@ if section == "Global Temperature Trends":
     st.divider()
     st.write("We first clena the data, and after we call a function for create the plot: ")
 
-    data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()
-    chart_data = pd.DataFrame(
-    {
-        "Year": data_cleaned['dt'],
-        "Temperature (°C)": data_cleaned['smoothedtemperature'],
-    }
-    )
-
-    start_year_chart = st.slider("Select Start Year", min_value=1750, max_value=chart_data['Year'].dt.year.max(), value=1750)
-    st.write(" ")
-
-    filtered_data = chart_data[chart_data['Year'].dt.year >= start_year_chart]
-
-    # temperature graph
-    alt_chart_graph = alt.Chart(filtered_data).mark_line(color="#CD9077").encode(
-        x = alt.X('Year:T', title='Year'),
-        y = alt.Y('Temperature (°C):Q', title = 'Temperature (°C)', scale = alt.Scale(domain=[6, 10]))
-        ).properties(
-        width = 700,
-        height = 400
-    )
-
-    # trend line
-    trend_line = alt.Chart(filtered_data).transform_regression(
-        'Year', 'Temperature (°C)', method='linear'
-    ).mark_line(color="blue", opacity=0.7).encode(
-        x = alt.X('Year:T'),
-        y = alt.Y('Temperature (°C):Q')
-    )
-
-    complete_temperature_chart = alt_chart_graph + trend_line
-    
-    st.altair_chart(complete_temperature_chart, use_container_width=True)
+    graph.plot_line_trend(data_cleaned)
 
     # we use HTML and CSS to justify and display using bullet poin the data
     st.markdown("""
         <div style='text-align: justify;'>
             <ul>
-                <li>In the first part, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, using the slider, you can remove these dates and display only the data from 1840 to 2010.</li>
-                <li>Starting from the year 1975, we observe a significant change in temperature, where the effects of global warming become evident.</li>
+                <li> In the first part, we notice that the years before 1840 contain some inconsistent data and noise. Therefore, using the slider, you can remove these dates and display only the data from 1840 to 2010. </li>
+                <li> Starting from the year 1975, we observe a significant change in temperature, where the effects of global warming become evident. </li>
             </ul>
         </div>
         """,
