@@ -3,6 +3,8 @@ import geopandas as gpd
 import pandas as pd
 import streamlit as st
 import altair as alt
+import plotly.express as px
+import plotly.graph_objects as go
 import csv
 
 def plot_line_trend(data_cleaned):
@@ -40,4 +42,83 @@ def plot_line_trend(data_cleaned):
 
     complete_temperature_chart = alt_chart_graph + trend_line
 
-    st.altair_chart(complete_temperature_chart, use_container_width=True)
+    return complete_temperature_chart
+
+def europe_temperature_map(europe, geojson_data):
+    # Create the interactive map
+    fig_interactive_map_temperature = px.choropleth_mapbox(
+        europe,
+        geojson = geojson_data,
+        locations = europe.index,
+        color = "AverageTemperature",
+        hover_name = "SOVEREIGNT",  # Hover info can include country names
+        color_continuous_scale = "temps",
+        range_color = (2, 16),  # Adjust based on your data range
+        mapbox_style = "carto-positron",
+        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
+        zoom = 3,
+        title = "Europe - Average Temperature by Country from 1740 to 2015",
+        height = 600
+    )
+
+    # Configure the color bar (legend) position
+    fig_interactive_map_temperature.update_layout(
+        margin = dict (t = 30),
+        coloraxis_colorbar = dict(
+            orientation = "h",  # Set horizontal orientation for the legend
+            y = -0.15,           # Position the legend below the map (adjust value to move lower or higher)
+            x = 0.5,            # Center the color bar horizontally
+            xanchor = "center", # Anchor the bar at its center
+            title = "Avg Temperature (°C)"  # Label for the color bar
+        )
+    )
+
+    return fig_interactive_map_temperature
+
+def europe_thermal_excursion_map(europe, geojson_data, top_10_highest_excursion, top_10_lowest_excursion):
+    fig_interactive_map_thermal_excursion = px.choropleth_mapbox(
+        europe,
+        geojson = geojson_data,
+        #locations = europe.index,
+        mapbox_style = "carto-positron",
+        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
+        zoom = 3,
+        title = "Europe - ten cities with the highest and lowest thermal excursion",
+        height = 600
+    )
+
+    # Add scatter layer for top 10 cities with red markers
+    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
+        lat=top_10_highest_excursion['latitude'],
+        lon=top_10_highest_excursion['longitude'],
+        mode='markers',
+        name = "Highest Thermal Excursions",
+        marker=dict(size=10, color='red'),
+        text=top_10_highest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
+        hoverinfo='text'
+    ))
+
+    # Add scatter layer for worst 10 cities with blue markers
+    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
+        lat=top_10_lowest_excursion['latitude'],
+        lon=top_10_lowest_excursion['longitude'],
+        mode='markers',
+        name = "Lowest Thermal Excursions",
+        marker=dict(size=10, color='blue'),
+        text=top_10_lowest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
+        hoverinfo='text'
+    ))
+
+    # Position the legend below the map
+    fig_interactive_map_thermal_excursion.update_layout(
+        margin = dict (t = 30),
+        legend=dict(
+            orientation="h",  # Horizontal orientation
+            yanchor="bottom",
+            y=-0.1,  # Position below the map
+            xanchor="center",
+            x=0.5
+        )
+    )
+
+    return fig_interactive_map_thermal_excursion

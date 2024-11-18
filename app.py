@@ -57,7 +57,9 @@ if section == "Global Temperature Trends":
     st.divider()
     st.write("We first clena the data, and after we call a function for create the plot: ")
 
-    graph.plot_line_trend(data_cleaned)
+    complete_temperature_chart = graph.plot_line_trend(data_cleaned)
+
+    st.altair_chart(complete_temperature_chart, use_container_width=True)
 
     # we use HTML and CSS to justify and display using bullet poin the data
     st.markdown("""
@@ -91,36 +93,9 @@ elif section == "Europe Temperature Map":
 
     europe = europe.merge(state_branches, left_on="SOVEREIGNT", right_on="Country", how="left")
     europe = europe.to_crs(epsg=4326)
-    
     geojson_data = europe.__geo_interface__
 
-    # Create the interactive map
-    fig_interactive_map_temperature = px.choropleth_mapbox(
-        europe,
-        geojson = geojson_data,
-        locations = europe.index,
-        color = "AverageTemperature",
-        hover_name = "SOVEREIGNT",  # Hover info can include country names
-        color_continuous_scale = "temps",
-        range_color = (2, 16),  # Adjust based on your data range
-        mapbox_style = "carto-positron",
-        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
-        zoom = 3,
-        title = "Europe - Average Temperature by Country from 1740 to 2015",
-        height = 600
-    )
-
-    # Configure the color bar (legend) position
-    fig_interactive_map_temperature.update_layout(
-        margin = dict (t = 30),
-        coloraxis_colorbar = dict(
-            orientation = "h",  # Set horizontal orientation for the legend
-            y = -0.15,           # Position the legend below the map (adjust value to move lower or higher)
-            x = 0.5,            # Center the color bar horizontally
-            xanchor = "center", # Anchor the bar at its center
-            title = "Avg Temperature (°C)"  # Label for the color bar
-        )
-    )
+    fig_interactive_map_temperature = graph.europe_temperature_map(europe, geojson_data)
 
     st.plotly_chart(fig_interactive_map_temperature)
 
@@ -143,50 +118,8 @@ elif section == "Europe Temperature Map":
     st.write("And the 10 cities with the lowest thermal excursion:")
     st.dataframe(top_10_lowest_excursion, use_container_width=True)
 
-    fig_interactive_map_thermal_excursion = px.choropleth_mapbox(
-        europe,
-        geojson = geojson_data,
-        #locations = europe.index,
-        mapbox_style = "carto-positron",
-        center = {"lat": 50, "lon": 10},  # Adjust to focus on Europe
-        zoom = 3,
-        title = "Europe - ten cities with the highest and lowest thermal excursion",
-        height = 600
-    )
-
-    # Add scatter layer for top 10 cities with red markers
-    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
-        lat=top_10_highest_excursion['latitude'],
-        lon=top_10_highest_excursion['longitude'],
-        mode='markers',
-        name = "Highest Thermal Excursions",
-        marker=dict(size=10, color='red'),
-        text=top_10_highest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
-        hoverinfo='text'
-    ))
-
-    fig_interactive_map_thermal_excursion.add_trace(go.Scattermapbox(
-        lat=top_10_lowest_excursion['latitude'],
-        lon=top_10_lowest_excursion['longitude'],
-        mode='markers',
-        name = "Lowest Thermal Excursions",
-        marker=dict(size=10, color='blue'),
-        text=top_10_lowest_excursion.apply(lambda row: f"{row['city']}, {row['country']}<br>Thermal Excursion: {row['thermal_excursion']}°C", axis=1),
-        hoverinfo='text'
-    ))
-
-    fig_interactive_map_thermal_excursion.update_layout(
-        margin = dict (t = 30),
-        legend=dict(
-            orientation="h",  # Horizontal orientation
-            yanchor="bottom",
-            y=-0.1,  # Position below the map
-            xanchor="center",
-            x=0.5
-        )
-    )
-
     st.write("Now, we display the data on an interactive map:")
+    fig_interactive_map_thermal_excursion = graph.europe_thermal_excursion_map(europe, geojson_data, top_10_highest_excursion, top_10_lowest_excursion)
     st.plotly_chart(fig_interactive_map_thermal_excursion)
     
 elif section == "Trip Calculator":
