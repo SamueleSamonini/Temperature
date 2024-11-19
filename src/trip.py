@@ -2,7 +2,6 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.spatial import KDTree
 
 def trip_calculator(europe_csv, start_city, final_city):
     recent_temperature_df = europe_csv[europe_csv['dt'] >= '2005-01-01']
