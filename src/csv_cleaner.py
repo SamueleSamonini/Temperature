@@ -1,6 +1,15 @@
 import pandas as pd
 
 def data_clean_global_temperatures(csv_path):
+    """
+    Cleans and preprocesses a global temperature dataset from a CSV file.
+
+    Parameter: 
+        csv_path -> The file path of the CSV file containing the dataset.
+
+    Return:
+        data_clean -> A cleaned and preprocessed DataFrame.
+    """
     data = pd.read_csv(csv_path)
     
     data['dt'] = pd.to_datetime(data['dt']) # convert from string to datetime format
@@ -12,9 +21,19 @@ def data_clean_global_temperatures(csv_path):
     return(data_clean)
 
 def clean_coordinates(df, lat_col = 'Latitude', lon_col = 'Longitude'):
+    """
+    Remove non-numeric characters except for "N", "S", "E", and "W". And also set the dt column to datetime values.
+
+    Parameters: 
+        df -> The CSV file that contain all the cities
+        lat_col -> the latitude value
+        lon_col -> the longitude value
+
+    Return:
+        df -> A dataframe with cleaned coordinates
+    """
     df['dt'] = pd.to_datetime(df['dt'])
     def clean_lat_lon(value):
-        # Remove non-numeric characters except for "N", "S", "E", and "W"
         if isinstance(value, str):
             if value[-1] == 'N':
                 return float(value[:-1])  # North is positive
