@@ -1,6 +1,3 @@
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
 import numpy as np
 
 def trip_calculator(europe_csv, start_city, final_city):

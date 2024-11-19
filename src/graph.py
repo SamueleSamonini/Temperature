@@ -1,11 +1,8 @@
-import matplotlib.pyplot as plt
-import geopandas as gpd
 import pandas as pd
 import streamlit as st
 import altair as alt
 import plotly.express as px
 import plotly.graph_objects as go
-import csv
 
 def plot_line_trend(data_cleaned):
     data_cleaned['smoothedtemperature'] = data_cleaned['landaveragetemperature'].rolling(window = 12, center = True).mean()

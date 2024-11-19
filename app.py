@@ -1,13 +1,7 @@
 import pandas as pd
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import streamlit as st
-import altair as alt
-import plotly.express as px
-import plotly.graph_objects as go
 from src import csv_cleaner, graph, trip
-import sys
-import csv
 
 # Streamlit title and description
 st.title("European Temperature Analysis")

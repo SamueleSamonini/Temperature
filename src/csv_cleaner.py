@@ -1,7 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import sys
-import csv
 
 def data_clean_global_temperatures(csv_path):
     data = pd.read_csv(csv_path)
