@@ -2,6 +2,12 @@
 
 This university project explores historical global temperature trends, focusing on Europe. Using `Pandas`, `GeoPandas`, `Matplotlib`, `NumPy`, and `Streamlit`, the project offers tools for analysis, visualization, and mapping to interpret climate data effectively. The interactive application is built with `Streamlit`, providing an intuitive user interface.
 
+## Notes
+
+- You can access the project at [this link](https://temperaturepythonuniversityproject.streamlit.app/ "Temperature App").
+- This project is part of a university assignment for the **Data Science for Economics (DSE)** course at the **University of Milan (Unimi)**. Its goal is to explore and visualize historical temperature data.
+- The project also includes a Jupyter Notebook called `version_without_streamlit.ipynb`. This is an older version of the code without Streamlit integration, included in the project for educational purposes only.
+
 ## Project Workflow
 
 ### Data Cleaning and Preparation
@@ -35,6 +41,3 @@ The project is built with `Streamlit`, enabling an interactive experience. Users
 - Explore global temperature trends through dynamic graphs.
 - Interact with temperature maps of Europe to visualize average temperatures and thermal excursions.
 - Calculate and visualize the warmest route between cities in Europe.
-
-## Note
-This project is part of a university assignment for the course of Data Science for Economics (DSE) from the Università degli Studi di Milano (Unimi) and aims to explore and visualize historical temperature data.
