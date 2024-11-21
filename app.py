@@ -49,11 +49,11 @@ if section == "Global Temperature Trends":
     )
 
     # Display Cleaned Data
-    st.write('These are the global temperature data that we use to create the graph below.')
+    st.write('These are a preview of the global temperature data that we use to create the graph below.')
     st.dataframe(data_cleaned.head(100), use_container_width = True)
 
     st.divider()
-    st.write("We first clena the data, and after we call a function for create the plot: ")
+    st.write("We first clean the data, and after we call a function for create the plot: ")
 
     # call the function and show the line chart
     complete_temperature_chart = graph.plot_line_trend(data_cleaned)
