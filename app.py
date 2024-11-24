@@ -50,7 +50,8 @@ if section == "Global Temperature Trends":
 
     # Display Cleaned Data
     st.write('These are a preview of the global temperature data that we use to create the graph below.')
-    st.dataframe(data_cleaned.head(100), use_container_width = True)
+    selected_columns = data_cleaned[['dt', 'landaveragetemperature']]
+    st.dataframe(selected_columns.head(100), use_container_width = True)
 
     st.divider()
     st.write("We first clean the data, and after we call a function for create the plot: ")
@@ -161,7 +162,7 @@ elif section == "Trip Calculator":
 
     # opens a selectbox in streamlit with all the cities present in the europe_csv df, for choosing the city where the trip finish
     final_city = st.selectbox(
-        "Select the start city: ",
+        "Select the final city: ",
         reversed_cities_for_trip, # display the unique cities in reversed order, only for graphical pourpose
         key = "final_city_selectbox",
         placeholder = "No city selected"
